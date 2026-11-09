@@ -1,0 +1,70 @@
+
+name: Build Pac-Man
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-15
+            platform: macos
+          - os: windows-latest
+            platform: windows
+          - os: ubuntu-22.04
+            platform: ubuntu
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+
+      - name: Install dependencies
+        run: uv sync --locked
+
+      - name: Build application
+        shell: bash
+        run: |
+          uv run pyinstaller \
+            --noconfirm \
+            --clean \
+            --name pac-man \
+            --onedir \
+            --windowed \
+            --add-data "assets:assets" \
+            --add-data "config.json:." \
+            pac-man.py
+
+      - name: Create macOS archive
+        if: matrix.platform == 'macos'
+        run: |
+          ditto -c -k --keepParent \
+            dist/pac-man.app PacMan-macOS.zip
+
+      - name: Create Windows archive
+        if: matrix.platform == 'windows'
+        shell: pwsh
+        run: |
+          Compress-Archive -Path dist/pac-man `
+            -DestinationPath PacMan-Windows.zip
+
+      - name: Create Ubuntu archive
+        if: matrix.platform == 'ubuntu'
+        run: |
+          zip -r PacMan-Ubuntu.zip dist/pac-man
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: pacman-${{ matrix.platform }}
+          path: PacMan-*.zip
+          if-no-files-found: error

@@ -1,0 +1,18 @@
+[project]
+name = "pac-man"
+version = "0.1.0"
+description = "A configurable multi-level Pac-Man maze game"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "pygame-ce>=2.5.8",
+    "mazegenerator",
+]
+
+[tool.uv.sources]
+mazegenerator = { path = "packagies/mazegenerator-2.1.0-py3-none-any.whl" }
+
+[dependency-groups]
+dev = [
+    "pyinstaller>=6.22.3",
+]
