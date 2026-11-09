@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import TYPE_CHECKING
 import pygame
 from constants import Screen, WIDTH, HEIGHT, WEST, SOUTH, EAST, NORTH, BLUE, RED, ORANGE, CYAN, PINK, GhostColor
@@ -8,7 +10,6 @@ from scenes.base import Scene
 import random
 import math
 from collections import deque
-
 
 if TYPE_CHECKING:
     from game import Game
