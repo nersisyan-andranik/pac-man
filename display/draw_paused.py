@@ -4,9 +4,17 @@ from constants import (
     GAP_AFTER_TITLE, GAP_BETWEEN_LINES, GAP_SECTION, PAUSED_SCREEN_COMMANDS,
 )
 from display.utils import draw_centered
+import pygame
+from types import ModuleType
 
 
-def draw_paused(screen, pygame) -> None:
+def draw_paused(screen: pygame.Surface, pygame: ModuleType) -> None:
+    """Draw paused on the screen.
+
+    Args:
+        screen: Input for draw paused.
+        pygame: Input for draw paused.
+    """
     fonts = {
         "title": pygame.font.Font(None, FONT_TITLE_SIZE),
         "menu": pygame.font.Font(None, FONT_SUBTITLE_SIZE),
@@ -22,7 +30,10 @@ def draw_paused(screen, pygame) -> None:
     y += GAP_AFTER_TITLE
 
     y += GAP_SECTION
-    y = draw_centered(screen, "Game progress is saved while you paused", fonts["menu"], WHITE, y)
+    y = draw_centered(
+        screen, "Game progress is saved while you paused",
+        fonts["menu"], WHITE, y,
+    )
     y += GAP_AFTER_TITLE
 
     for line in PAUSED_SCREEN_COMMANDS:

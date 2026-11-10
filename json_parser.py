@@ -1,8 +1,13 @@
 import json
-import os,sys
-from constants import EXPECTED_TYPES, DEFAULTS, REQUIRED_LEVEL_KEYS, LEVEL_EXPECTED_TYPES
+import os
+import sys
+from constants import (
+    EXPECTED_TYPES, DEFAULTS, REQUIRED_LEVEL_KEYS,
+    LEVEL_EXPECTED_TYPES,
+)
 from errors import ConfigError
 from pathlib import Path
+from typing import Any
 
 
 def _read_file(path: Path) -> str:
@@ -86,7 +91,9 @@ def _strip_comments(raw: str) -> str:
             while i + 1 < n and not (raw[i] == "*" and raw[i + 1] == "/"):
                 i += 1
             if i + 1 >= n:
-                raise ConfigError("unterminated '/* ... */' comment in config file")
+                raise ConfigError(
+                    "unterminated '/* ... */' comment in config file"
+                )
             i += 2
             continue
         result.append(c)
@@ -96,7 +103,7 @@ def _strip_comments(raw: str) -> str:
     return "".join(result)
 
 
-def _parse_json(cleaned: str, path: Path) -> dict:
+def _parse_json(cleaned: str, path: Path) -> dict[str, Any]:
     """Parse cleaned JSON text into a dictionary.
 
     Args:
@@ -114,7 +121,8 @@ def _parse_json(cleaned: str, path: Path) -> dict:
         data = json.loads(cleaned)
     except json.JSONDecodeError as e:
         raise ConfigError(
-            f"invalid JSON in '{path}' (line {e.lineno}, column {e.colno}): {e.msg}"
+            f"invalid JSON in '{path}' "
+            f"(line {e.lineno}, column {e.colno}): {e.msg}"
         )
 
     if not isinstance(data, dict):
@@ -126,7 +134,7 @@ def _parse_json(cleaned: str, path: Path) -> dict:
     return data
 
 
-def _apply_defaults(config: dict) -> dict:
+def _apply_defaults(config: dict[str, Any]) -> dict[str, Any]:
     """Fill missing configuration keys with their default values.
 
     Existing values are preserved. Only keys absent from the
@@ -144,7 +152,7 @@ def _apply_defaults(config: dict) -> dict:
     return config
 
 
-def _validate(config: dict) -> dict:
+def _validate(config: dict[str, Any]) -> dict[str, Any]:
     """Validate configuration types, required keys, and values.
 
     Checks the expected types of top-level configuration values,
@@ -165,16 +173,19 @@ def _validate(config: dict) -> dict:
         KeyError: If an expected top-level key is missing before
             defaults have been applied.
     """
-    for key, expected_type in EXPECTED_TYPES.items():
+    for key, expected_types in EXPECTED_TYPES.items():
         value = config[key]
-        if not isinstance(value, expected_type):
-            expected_name = (
-                expected_type.__name__
-                if isinstance(expected_type, type)
-                else " or ".join(t.__name__ for t in expected_type)
-            )
+
+        if not isinstance(value, expected_types):
+            if isinstance(expected_types, tuple):
+                names = " or ".join(
+                    t.__name__ for t in expected_types
+                )
+            else:
+                names = expected_types.__name__
+
             raise ConfigError(
-                f"key '{key}' must be of type {expected_name}, "
+                f"key '{key}' must be of type {names}, "
                 f"got {type(value).__name__}"
             )
 
@@ -187,18 +198,29 @@ def _validate(config: dict) -> dict:
 
         for key in REQUIRED_LEVEL_KEYS:
             if key not in level:
-                raise ConfigError(f"level #{idx} is missing required key '{key}'")
+                raise ConfigError(
+                    f"level #{idx} is missing required key '{key}'"
+                )
 
-        for key, expected_type in LEVEL_EXPECTED_TYPES.items():
-            if key in level and not isinstance(level[key], expected_type):
-                raise ConfigError(
-                    f"level #{idx}: key '{key}' must be of type "
-                    f"{expected_type.__name__}, got {type(level[key]).__name__}"
+    for key, expected_type in LEVEL_EXPECTED_TYPES.items():
+        if key in level and not isinstance(level[key], expected_type):
+            if isinstance(expected_type, tuple):
+                type_name = " or ".join(
+                    t.__name__ for t in expected_type
                 )
-            if key in level and level[key] <= 0:
-                raise ConfigError(
-                    f"level #{idx}: key '{key}' must be a positive number"
-                )
+            else:
+                type_name = expected_type.__name__
+
+            raise ConfigError(
+                f"level #{idx}: key '{key}' must be of type "
+                f"{type_name}, "
+                f"got {type(level[key]).__name__}"
+            )
+
+        if key in level and level[key] <= 0:
+            raise ConfigError(
+                f"level #{idx}: key '{key}' must be a positive number"
+            )
 
     if config["lives"] <= 0:
         raise ConfigError("'lives' must be a positive integer")
@@ -222,7 +244,7 @@ def _config_path(arguments: list[str]) -> Path:
     return path.resolve()
 
 
-def load_config() -> dict:
+def load_config() -> dict[str, Any]:
     """Load and validate a configuration file.
 
     Reads the file, removes supported comments, parses the remaining

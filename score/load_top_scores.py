@@ -1,8 +1,9 @@
 import json
 from errors import ConfigError
+from pathlib import Path
 
 
-def load_top_scores(path: str, limit: int = 10) -> list[str]:
+def load_top_scores(path: str | Path, limit: int = 10) -> list[str]:
     """Load the best scores from a JSON file and format them for display.
     The file must contain a JSON list of objects, for example:
     [{"name": "AAA", "score": 1200}, {"name": "BBB", "score": 800}]
@@ -29,8 +30,12 @@ def load_top_scores(path: str, limit: int = 10) -> list[str]:
         return []
 
     valid = [
-        item for item in data
-        if isinstance(item, dict) and isinstance(item.get("score"), (int, float))
+        item
+        for item in data
+        if (
+                isinstance(item, dict)
+                and isinstance(item.get("score"), (int, float))
+        )
     ]
     best = sorted(valid, key=lambda item: item["score"], reverse=True)[:limit]
 

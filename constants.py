@@ -63,7 +63,7 @@ INPUT_BOX_HEIGHT = 50
 INPUT_BOX_PADDING = 12
 
 
-MENU_LINES= [
+MENU_LINES = [
     "Press SPACE to play",
     "Press ENTER to read the instructions",
     "Press ESC to exit",
@@ -78,7 +78,7 @@ COMMAND_LINES = [
     "P - Pause / Resume"
 ]
 
-RULES_LINES= [
+RULES_LINES = [
     "Eat all the dots scattered around the maze.",
     "Avoid the ghosts: if one touches you, you lose a life.",
     "Eat every dot in the maze to win the level!",
@@ -105,7 +105,7 @@ DEFAULTS = {
     ],
 }
 
-EXPECTED_TYPES = {
+EXPECTED_TYPES: dict[str, type | tuple[type, ...]] = {
     "highscore_filename": str,
     "lives": int,
     "pacgum": int,
@@ -117,7 +117,7 @@ EXPECTED_TYPES = {
     "level": list,
 }
 
-LEVEL_EXPECTED_TYPES = {
+LEVEL_EXPECTED_TYPES: dict[str, type | tuple[type, ...]] = {
     "width": int,
     "height": int,
 }
@@ -131,6 +131,7 @@ REQUIRED_LEVEL_KEYS = ("width", "height")
 
 
 class Screen(Enum):
+    """Represent the Screen component."""
     MENU = auto()
     PLAYING = auto()
     GAME_OVER = auto()
@@ -139,14 +140,16 @@ class Screen(Enum):
 
 
 class Direction(Enum):
+    """Represent the Direction component."""
     UP = (0, -1)
     DOWN = (0, 1)
     LEFT = (-1, 0)
     RIGHT = (1, 0)
 
+
 class GhostColor(Enum):
+    """Represent the GhostColor component."""
     BLINKY = RED
     CLYDE = ORANGE
     INKY = CYAN
     PINKY = PINK
-

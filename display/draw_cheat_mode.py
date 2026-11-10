@@ -1,9 +1,33 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 import pygame
 from display.utils import load_icon
 from paths import asset_path
 
+if TYPE_CHECKING:
+    from scenes.playing import PlayingScene
 
-def draw_cheat_menu(screen, scene):
+
+def draw_cheat_menu(
+    screen: pygame.Surface,
+    scene: "PlayingScene",
+) -> None:
+    """Draw the cheat mode menu and its interactive controls.
+
+    Render a semi-transparent overlay, a centered menu panel,
+    cheat option icons, toggle switches, and action buttons.
+    Store the clickable control rectangles in ``scene.rects``
+    for mouse event handling.
+
+    Args:
+        screen: Pygame surface on which the menu is rendered.
+        scene: Active playing scene containing cheat states
+            and interactive control rectangles.
+
+    Returns:
+        None.
+    """
     cheat_icons = {
         "invincible": asset_path("icons/shield-ban.png"),
         "freeze_ghosts": asset_path("icons/snowflake.png"),
@@ -44,7 +68,7 @@ def draw_cheat_menu(screen, scene):
 
     if close_icon is not None:
         close_icon_rect = close_icon.get_rect(
-            topright = (menu.right - 15, menu.top + 15)
+            topright=(menu.right - 15, menu.top + 15)
         )
         screen.blit(close_icon, close_icon_rect)
         scene.rects["close"] = close_icon_rect
@@ -100,7 +124,33 @@ def draw_cheat_menu(screen, scene):
             scene.rects[identifier] = rect
 
 
-def draw_neon_button(screen, x, y, text, font, width=125, height=44):
+def draw_neon_button(
+    screen: pygame.Surface,
+    x: int,
+    y: int,
+    text: str,
+    font: pygame.font.Font,
+    width: int = 125,
+    height: int = 44,
+) -> pygame.Rect:
+    """Draw a rectangular button with a neon glow effect.
+
+    Render a dark button background, a cyan glowing border,
+    and centered text at the specified screen position.
+
+    Args:
+        screen: Pygame surface on which the button is drawn.
+        x: Horizontal position of the button's top-left corner.
+        y: Vertical position of the button's top-left corner.
+        text: Label displayed inside the button.
+        font: Pygame font used to render the label.
+        width: Button width in pixels. Defaults to 125.
+        height: Button height in pixels. Defaults to 44.
+
+    Returns:
+        pygame.Rect: Rectangle representing the button's
+        clickable area.
+    """
     rect = pygame.Rect(x, y, width, height)
 
     pygame.draw.rect(
@@ -155,12 +205,29 @@ def draw_neon_button(screen, x, y, text, font, width=125, height=44):
 
     return rect
 
+
 def draw_toggle(
     screen: pygame.Surface,
     x: int,
     y: int,
     enabled: bool,
 ) -> pygame.Rect:
+    """Draw a toggle switch representing an enabled or disabled state.
+
+    Display a green switch with the knob on the right when
+    enabled, or a gray switch with the knob on the left
+    when disabled.
+
+    Args:
+        screen: Pygame surface on which the toggle is drawn.
+        x: Horizontal position of the toggle's top-left corner.
+        y: Vertical position of the toggle's top-left corner.
+        enabled: Whether the toggle is currently enabled.
+
+    Returns:
+        pygame.Rect: Rectangle representing the toggle's
+        clickable area.
+    """
 
     width = 60
     height = 30

@@ -4,7 +4,10 @@ from paths import asset_path
 
 
 class AudioManager:
+    """Represent the AudioManager component."""
     def __init__(self) -> None:
+        """Initialize the instance.
+        """
         self.INTRO_FINISHED = pygame.event.custom_type()
         self.DEATH_FINISHED = pygame.event.custom_type()
         self.TIME_FINISHED = pygame.event.custom_type()
@@ -38,7 +41,7 @@ class AudioManager:
         self.death_channel = pygame.mixer.Channel(3)
 
         self.muted = False
-        self.current_music = None
+        self.current_music: str | None = None
 
         self.death_channel.set_endevent(
             self.DEATH_FINISHED
@@ -50,6 +53,12 @@ class AudioManager:
         self.death_channel.set_volume(1.0)
 
     def play_music(self, mode: str, loops: int = -1) -> None:
+        """Perform play music.
+
+        Args:
+            mode: Input for play music.
+            loops: Input for play music.
+        """
         if self.current_music == mode:
             return
 
@@ -69,13 +78,25 @@ class AudioManager:
         self.current_music = mode
 
     def play_intro(self) -> None:
+        """Perform play intro.
+        """
         self.play_music("intro", loops=0)
 
     def update_ghost_music(self, edible: bool) -> None:
+        """Update ghost music.
+
+        Args:
+            edible: Input for update ghost music.
+        """
         mode = "edible" if edible else "normal"
         self.play_music(mode)
 
     def play_effect(self, name: str) -> None:
+        """Perform play effect.
+
+        Args:
+            name: Input for play effect.
+        """
         if name == "eat":
             channel = pygame.mixer.find_channel()
 
@@ -104,6 +125,11 @@ class AudioManager:
             )
 
     def set_muted(self, muted: bool) -> None:
+        """Set muted.
+
+        Args:
+            muted: Input for set muted.
+        """
         self.muted = muted
 
         pygame.mixer.music.set_volume(
@@ -119,7 +145,6 @@ class AudioManager:
             0.0 if muted else 1.0
         )
 
-        # Apply mute/unmute to dynamic eat channels too.
         volume = 0.0 if muted else 0.4
 
         for index in range(
@@ -128,14 +153,20 @@ class AudioManager:
             pygame.mixer.Channel(index).set_volume(volume)
 
     def pause(self) -> None:
+        """Perform pause.
+        """
         pygame.mixer.music.pause()
         pygame.mixer.pause()
 
     def resume(self) -> None:
+        """Perform resume.
+        """
         pygame.mixer.music.unpause()
         pygame.mixer.unpause()
 
     def stop_all(self) -> None:
+        """Perform stop all.
+        """
         pygame.mixer.music.set_endevent(pygame.NOEVENT)
         self.death_channel.set_endevent(pygame.NOEVENT)
 

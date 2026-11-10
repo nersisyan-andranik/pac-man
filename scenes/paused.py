@@ -6,7 +6,13 @@ from scenes.base import Scene
 
 class PausedScene(Scene):
 
+    """Represent the PausedScene component."""
     def handle_event(self, event: pygame.event.Event) -> None:
+        """Handle event.
+
+        Args:
+            event: Input for handle event.
+        """
         if event.type != pygame.KEYDOWN:
             return
         if event.key == pygame.K_ESCAPE:
@@ -15,6 +21,10 @@ class PausedScene(Scene):
             self.game.audio.resume()
             self.game.change_scene(Screen.PLAYING, resume=True)
 
-
     def draw(self, screen: pygame.Surface) -> None:
+        """Perform draw.
+
+        Args:
+            screen: Input for draw.
+        """
         draw_paused(screen, pygame)

@@ -4,14 +4,30 @@ from constants import (
     MIN_CELL_SIZE, MIN_MAZE_WIDTH, MIN_MAZE_HEIGHT,
     HUD_HEIGHT, MAZE_MARGIN, DEFAULT_LEVEL_SIZE,
 )
+from pathlib import Path
 
 
+def load_icon(
+    path: Path | str,
+    size: tuple[int, int] = (36, 36),
+) -> pygame.Surface | None:
+    """Load icon.
 
-def load_icon(path, size=(36, 36)):
+    Args:
+        path: Input for load icon.
+        size: Input for load icon.
+    """
     image = pygame.image.load(path)
     return pygame.transform.smoothscale(image, size)
 
-def draw_centered(screen, text, font, color, y) -> int:
+
+def draw_centered(
+    screen: pygame.Surface,
+    text: str,
+    font: pygame.font.Font,
+    color: pygame.Color | str | tuple[int, int, int],
+    y: int,
+) -> int:
     """Draw text centered horizontally with its top at y. Return its bottom."""
     surface = font.render(text, True, color)
     rect = surface.get_rect(top=y, centerx=screen.get_width() // 2)
@@ -20,22 +36,36 @@ def draw_centered(screen, text, font, color, y) -> int:
 
 
 def maze_limits(window_w: int, window_h: int) -> tuple[int, int]:
-    """Return the largest maze (in cells) that keeps MIN_CELL_SIZE pixels per cell."""
+    """Return the largest maze fitting the minimum cell size."""
     max_w = (window_w - 2 * MAZE_MARGIN) // MIN_CELL_SIZE
     max_h = (window_h - HUD_HEIGHT - MAZE_MARGIN) // MIN_CELL_SIZE
     return max_w, max_h
 
 
 def _as_int(value: object, default: int) -> int:
+    """Perform  as int.
+
+    Args:
+        value: Input for  as int.
+        default: Input for  as int.
+
+    Returns:
+        The result of  as int.
+    """
     if isinstance(value, int) and not isinstance(value, bool):
         return value
     return default
 
 
-def sanitize_levels(raw_levels: object, window_w: int, window_h: int) -> list[dict[str, int]]:
-    """Return valid (width, height) pairs, clamped to what the window can show."""
+def sanitize_levels(
+    raw_levels: object, window_w: int, window_h: int
+) -> list[dict[str, int]]:
+    """Return valid level dimensions clamped to the window."""
     if not isinstance(raw_levels, list) or not raw_levels:
-        print("config: 'levels' missing or empty, using defaults", file=sys.stderr)
+        print(
+            "config: 'levels' missing or empty, using defaults",
+            file=sys.stderr,
+        )
         raw_levels = [{} for _ in range(10)]
 
     max_w, max_h = maze_limits(window_w, window_h)

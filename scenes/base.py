@@ -13,6 +13,11 @@ class Scene(ABC):
     """One screen of the game (menu, playing, game over...)."""
 
     def __init__(self, game: Game) -> None:
+        """Initialize the instance.
+
+        Args:
+            game: Input for   init  .
+        """
         self.game = game
 
     def on_enter(self) -> None:

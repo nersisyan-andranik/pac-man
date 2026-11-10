@@ -1,8 +1,7 @@
-from typing import Any
 import pygame
-
+from typing import Any
 from audio_manager import AudioManager
-from constants import FPS, BLACK, Screen, EXPECTED_TYPES, HEIGHT, WIDTH
+from constants import FPS, BLACK, Screen, HEIGHT, WIDTH
 from scenes.base import Scene
 from scenes.game_over import GameOverScene
 from scenes.instructions import InstructionsScene
@@ -12,7 +11,13 @@ from scenes.playing import PlayingScene
 
 
 class Game:
-    def __init__(self, config: EXPECTED_TYPES) -> None:
+    """Represent the Game component."""
+    def __init__(self, config: dict[str, Any]) -> None:
+        """Initialize the instance.
+
+        Args:
+            config: Input for   init  .
+        """
         pygame.init()
         self.current_level = 0
         self.levels = config["levels"]
@@ -47,14 +52,24 @@ class Game:
             screen_id: Screen,
             resume: bool = False
     ) -> None:
+        """Perform change scene.
+
+        Args:
+            screen_id: Input for change scene.
+            resume: Input for change scene.
+        """
         self.scene = self.scenes[screen_id]
         if not resume:
             self.scene.on_enter()
 
     def quit(self) -> None:
+        """Perform quit.
+        """
         self.running = False
 
     def run(self) -> None:
+        """Perform run.
+        """
         while self.running:
             dt = self.clock.tick(FPS) / 1000
             for event in pygame.event.get():

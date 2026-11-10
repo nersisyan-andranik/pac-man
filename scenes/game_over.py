@@ -8,10 +8,18 @@ from scenes.base import Scene
 
 
 class GameOverScene(Scene):
+    """Represent the GameOverScene component."""
     def on_enter(self) -> None:
+        """Perform on enter.
+        """
         self.player_name = ""
 
     def handle_event(self, event: pygame.event.Event) -> None:
+        """Handle event.
+
+        Args:
+            event: Input for handle event.
+        """
         if event.type != pygame.KEYDOWN:
             return
 
@@ -32,4 +40,12 @@ class GameOverScene(Scene):
             self.player_name += event.unicode
 
     def draw(self, screen: pygame.Surface) -> None:
-        draw_game_over(screen, pygame, self.game.score, self.player_name, self.game.all_complete)
+        """Perform draw.
+
+        Args:
+            screen: Input for draw.
+        """
+        draw_game_over(
+            screen, pygame, self.game.score,
+            self.player_name, self.game.all_complete,
+        )

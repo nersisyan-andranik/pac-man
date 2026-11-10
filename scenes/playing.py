@@ -1,11 +1,14 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, cast
 import pygame
-from constants import Screen, WIDTH, HEIGHT, WEST, SOUTH, EAST, NORTH, BLUE, RED, ORANGE, CYAN, PINK, GhostColor
+from constants import (
+    Screen, WIDTH, HEIGHT, WEST, SOUTH, EAST, NORTH, BLUE,
+    RED, ORANGE, CYAN, PINK, GhostColor,
+)
 from display.draw_game import draw_game
 from display.utils import sanitize_levels
-from maze_adapter import generate_maze
+from maze_adapter import Maze, generate_maze
 from scenes.base import Scene
 import random
 import math
@@ -16,23 +19,33 @@ if TYPE_CHECKING:
 
 
 class PlayingScene(Scene):
+    """Represent the PlayingScene component."""
     def __init__(self, game: Game) -> None:
+        """Initialize the instance.
+
+        Args:
+            game: The game instance that owns this scene.
+        """
         super().__init__(game)
         self.audio = self.game.audio
-        self.pac_points_data : list[tuple[int, int]] = []
-        self.super_points_data : list[tuple[int, int]] = []
+        self.pac_points_data: list[tuple[int, int]] = []
+        self.super_points_data: list[tuple[int, int]] = []
         self.paused = False
-        self.maze = None
-        self.center_of_maze = None
-        self.cell_size = None
-        self.maze_start_point = None
+        self.maze: Maze = cast(Maze, None)
+        self.center_of_maze: tuple[int, int] = cast(
+            tuple[int, int], None
+        )
+        self.cell_size: int = cast(int, None)
+        self.maze_start_point: int = cast(int, None)
         self.pacman_direction = "left"
         self.pacman_moving = False
         self.mouth_timer = 0.0
-        self.mouth_angle = 30
-        self.pacman_current_cords = None
-        self.walls_locations = None
-        self.ghost_start_positions : list[tuple[int, int]] = []
+        self.mouth_angle: float = 30.0
+        self.pacman_current_cords: tuple[int, int] = cast(
+            tuple[int, int], None
+        )
+        self.walls_locations: list[str] = cast(list[str], None)
+        self.ghost_start_positions: list[tuple[int, int]] = []
         self.edible = False
         self.pacman_start = False
 
@@ -44,7 +57,7 @@ class PlayingScene(Scene):
 
         self.timer = 0.0
         self.edible_time = 0.0
-        self.ghost = None
+        self.ghost: list[dict[str, Any]] = cast(list[dict[str, Any]], None)
 
         self.intro_playing = False
         self.current_music = None
@@ -61,7 +74,7 @@ class PlayingScene(Scene):
             "double_speed": False,
             "open_cheat_modal": False
         }
-        self.rects = {
+        self.rects: dict[str, pygame.Rect | None] = {
             "cheat_mode": None,
             "invincible": None,
             "freeze_ghosts": None,
@@ -74,8 +87,18 @@ class PlayingScene(Scene):
             "muted": None
         }
 
-    def get_ghost_target(self, ghost: dict) -> tuple[int, int]:
+    def get_ghost_target(
+        self, ghost: dict[str, Any]
+    ) -> tuple[int, int]:
 
+        """Get ghost target.
+
+        Args:
+            ghost: Input for get ghost target.
+
+        Returns:
+            The result of get ghost target.
+        """
         pac_row, pac_col = self.pacman_current_cords
         strategy = ghost["strategy"]
 
@@ -123,8 +146,18 @@ class PlayingScene(Scene):
 
         return (pac_row, pac_col)
 
-    def get_valid_neighbors(self, position: tuple[int, int]) -> list[tuple[int, int]]:
+    def get_valid_neighbors(
+        self, position: tuple[int, int]
+    ) -> list[tuple[int, int]]:
 
+        """Get valid neighbors.
+
+        Args:
+            position: Input for get valid neighbors.
+
+        Returns:
+            The result of get valid neighbors.
+        """
         row, col = position
         directions = [
             (-1, 0, NORTH),
@@ -152,8 +185,19 @@ class PlayingScene(Scene):
 
         return neighbors
 
-    def find_short_path(self, start: tuple[int, int], goal: tuple[int, int]) -> list[tuple[int, int]]:
+    def find_short_path(
+        self, start: tuple[int, int], goal: tuple[int, int]
+    ) -> list[tuple[int, int]]:
 
+        """Perform find short path.
+
+        Args:
+            start: Input for find short path.
+            goal: Input for find short path.
+
+        Returns:
+            The result of find short path.
+        """
         directions = [
             (-1, 0, NORTH),
             (0, 1, EAST),
@@ -161,12 +205,19 @@ class PlayingScene(Scene):
             (0, -1, WEST)
         ]
 
-        previous = {start: None}
+        previous: dict[tuple[int, int], tuple[int, int] | None] = {
+            start: None
+        }
         queue = deque([start])
 
         best = start
 
-        def distance(position):
+        def distance(position: tuple[int, int]) -> int:
+            """Perform distance.
+
+            Args:
+                position: Input for distance.
+            """
             return (
                     (position[0] - goal[0]) ** 2
                     + (position[1] - goal[1]) ** 2
@@ -203,7 +254,7 @@ class PlayingScene(Scene):
                 queue.append(position)
 
         path = []
-        current = best
+        current: tuple[int, int] | None = best
 
         while current is not None:
             path.append(current)
@@ -211,21 +262,42 @@ class PlayingScene(Scene):
 
         return path[::-1]
 
-    def get_distance(self, pos1: tuple[int, int], pos2: tuple[int, int]) -> int:
+    def get_distance(
+        self, pos1: tuple[int, int], pos2: tuple[int, int]
+    ) -> int:
+        """Get distance.
+
+        Args:
+            pos1: Input for get distance.
+            pos2: Input for get distance.
+
+        Returns:
+            The result of get distance.
+        """
         return (
                 abs(pos1[0] - pos2[0])
                 + abs(pos1[1] - pos2[1])
         )
 
-    def get_escape_position(self, ghost: dict) -> tuple[int, int]:
+    def get_escape_position(
+        self, ghost: dict[str, Any]
+    ) -> tuple[int, int]:
 
+        """Get escape position.
+
+        Args:
+            ghost: Input for get escape position.
+
+        Returns:
+            The result of get escape position.
+        """
         current = ghost["position"]
         pacman = self.pacman_current_cords
 
         neighbors = self.get_valid_neighbors(current)
 
         if not neighbors:
-            return current
+            return cast(tuple[int, int], current)
 
         previous = ghost.get("previous_position")
 
@@ -248,6 +320,8 @@ class PlayingScene(Scene):
         return random.choice(options)
 
     def move_ghosts(self) -> None:
+        """Perform move ghosts.
+        """
         if self.cheat_state["freeze_ghosts"]:
             return
         from collections import Counter
@@ -291,7 +365,7 @@ class PlayingScene(Scene):
             free_neighbors = [
                 pos for pos in neighbors
                 if pos not in positions
-                   and pos not in reserved
+                and pos not in reserved
             ]
 
             if preferred not in positions and preferred not in reserved:
@@ -323,6 +397,11 @@ class PlayingScene(Scene):
             self.ghost[index]["position"] = position
 
     def get_maze_center(self) -> tuple[int, int]:
+        """Get maze center.
+
+        Returns:
+            The result of get maze center.
+        """
         center_row = self.maze.height // 2
         center_col = self.maze.width // 2
 
@@ -350,6 +429,8 @@ class PlayingScene(Scene):
         )
 
     def generate_points(self) -> None:
+        """Perform generate points.
+        """
         maze = self.maze
 
         corners = [
@@ -366,8 +447,8 @@ class PlayingScene(Scene):
             for row_index, row in enumerate(maze.cells)
             for col_index, cell in enumerate(row)
             if cell != 15
-               and (row_index, col_index) not in corners
-               and (row_index, col_index) != center_of_maze
+            and (row_index, col_index) not in corners
+            and (row_index, col_index) != center_of_maze
         ]
 
         count = round(len(available_cells) * 0.6)
@@ -380,6 +461,8 @@ class PlayingScene(Scene):
         self.pacman_current_cords = center_of_maze
 
     def update_movement_speed(self) -> None:
+        """Update movement speed.
+        """
         level = self.game.current_level
 
         if level == 1:
@@ -399,11 +482,13 @@ class PlayingScene(Scene):
             self.ghost_move_interval = 0.40
 
     def load_level(self) -> None:
+        """Load level.
+        """
         seed = 42 if self.game.current_level == 0 else 0
         self.update_movement_speed()
         self.game.level_max_time = 90
         self.mouth_timer = 0.0
-        self.mouth_angle = 30
+        self.mouth_angle = 30.0
         self.ghost_move_timer = 0.0
         self.timer = 0.0
         self.edible = False
@@ -480,6 +565,8 @@ class PlayingScene(Scene):
         self.audio.play_intro()
 
     def wall_checker(self) -> None:
+        """Perform wall checker.
+        """
         row, col = self.pacman_current_cords
         cell = self.maze.cells[row][col]
         walls_locations: list[str] = []
@@ -495,6 +582,8 @@ class PlayingScene(Scene):
         self.walls_locations = walls_locations
 
     def calculate_score(self) -> None:
+        """Perform calculate score.
+        """
         if self.pacman_current_cords in self.pac_points_data:
             self.game.score += self.game.points_per_pacgum
             self.pac_points_data.remove(self.pacman_current_cords)
@@ -514,6 +603,8 @@ class PlayingScene(Scene):
             self.edible_time = 0.0
 
     def lives_manager(self) -> None:
+        """Perform lives manager.
+        """
         if self.cheat_state["invincible"]:
             return
 
@@ -544,6 +635,8 @@ class PlayingScene(Scene):
                 return
 
     def time_manager(self) -> None:
+        """Perform time manager.
+        """
         self.game.level_max_time -= 1
         if self.game.level_max_time == 0:
             self.time_finished = True
@@ -552,6 +645,14 @@ class PlayingScene(Scene):
             self.audio.play_music("time_finished", loops=1)
 
     def complete_level(self, force: bool = False) -> bool:
+        """Perform complete level.
+
+        Args:
+            force: Input for complete level.
+
+        Returns:
+            The result of complete level.
+        """
         if not force and (
                 self.pac_points_data or self.super_points_data
         ):
@@ -571,6 +672,8 @@ class PlayingScene(Scene):
         return True
 
     def move_pacman(self) -> None:
+        """Perform move pacman.
+        """
         directions = {
             "up": (-1, 0),
             "down": (1, 0),
@@ -582,15 +685,20 @@ class PlayingScene(Scene):
 
         if self.pacman_direction not in self.walls_locations:
             row, col = self.pacman_current_cords
-            self.pacman_current_cords = (row + directions[self.pacman_direction][0], col + directions[self.pacman_direction][1])
+            self.pacman_current_cords = (
+                row + directions[self.pacman_direction][0],
+                col + directions[self.pacman_direction][1],
+            )
             # self.pacman_moving = True
 
     def reset_pacman_position(self) -> None:
+        """Perform reset pacman position.
+        """
         self.pacman_current_cords = self.center_of_maze
         self.pacman_direction = "left"
         self.pacman_start = False
         self.mouth_timer = 0.0
-        self.mouth_angle = 30
+        self.mouth_angle = 30.0
 
         for ghost_index, item in enumerate(self.ghost):
             item["position"] = self.ghost_start_positions[ghost_index]
@@ -605,6 +713,11 @@ class PlayingScene(Scene):
 
     def handle_event(self, event: pygame.event.Event) -> None:
 
+        """Handle event.
+
+        Args:
+            event: Input for handle event.
+        """
         if event.type == self.audio.INTRO_FINISHED:
             if not self.intro_playing:
                 return
@@ -636,54 +749,62 @@ class PlayingScene(Scene):
             self.game.change_scene(Screen.GAME_OVER)
             return
 
-
         if event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 1:
 
-                rect = getattr(self, "rects", None)["config_button"]
+                rect = self.rects["config_button"]
                 if rect is not None and rect.collidepoint(event.pos):
-                    # self.cheat_state["cheat_mode"] = not self.cheat_state["cheat_mode"]
-                    self.cheat_state["open_cheat_modal"] = not self.cheat_state["open_cheat_modal"]
+                    # Toggle the cheat menu using its current state.
+                    self.cheat_state["open_cheat_modal"] = (
+                        not self.cheat_state["open_cheat_modal"]
+                    )
 
-
-                rect = getattr(self, "rects", None)["invincible"]
+                rect = self.rects["invincible"]
                 if rect is not None and rect.collidepoint(event.pos):
-                    self.cheat_state["invincible"] = not self.cheat_state["invincible"]
+                    self.cheat_state["invincible"] = (
+                        not self.cheat_state["invincible"]
+                    )
 
-                rect = getattr(self, "rects", None)["freeze_ghosts"]
+                rect = self.rects["freeze_ghosts"]
                 if rect is not None and rect.collidepoint(event.pos):
-                    self.cheat_state["freeze_ghosts"] = not self.cheat_state["freeze_ghosts"]
+                    self.cheat_state["freeze_ghosts"] = (
+                        not self.cheat_state["freeze_ghosts"]
+                    )
                     if self.cheat_state["freeze_ghosts"]:
                         self.audio.stop_all()
                     else:
                         self.audio.update_ghost_music(self.edible)
 
-                rect = getattr(self, "rects", None)["double_speed"]
+                rect = self.rects["double_speed"]
                 if rect is not None and rect.collidepoint(event.pos):
-                    self.cheat_state["double_speed"] = not self.cheat_state["double_speed"]
+                    self.cheat_state["double_speed"] = (
+                        not self.cheat_state["double_speed"]
+                    )
                     self.pacman_move_interval = (
                         0.1 if self.cheat_state["double_speed"] else 0.2
                     )
 
-                rect = getattr(self, "rects", None)["extra_life"]
+                rect = self.rects["extra_life"]
                 if rect is not None and rect.collidepoint(event.pos):
                     self.game.lives += 1
 
-                rect = getattr(self, "rects", None)["extra_time"]
+                rect = self.rects["extra_time"]
                 if rect is not None and rect.collidepoint(event.pos):
                     self.game.level_max_time += 60
 
-                rect = getattr(self, "rects", None)["skip_level"]
+                rect = self.rects["skip_level"]
                 if rect is not None and rect.collidepoint(event.pos):
                     self.intro_playing = False
                     self.complete_level(force=True)
 
-                rect = getattr(self, "rects", None)["close"]
+                rect = self.rects["close"]
                 if rect is not None and rect.collidepoint(event.pos):
                     self.audio.resume()
-                    self.cheat_state["open_cheat_modal"] = not self.cheat_state["open_cheat_modal"]
+                    self.cheat_state["open_cheat_modal"] = (
+                        not self.cheat_state["open_cheat_modal"]
+                    )
 
-                rect = getattr(self, "rects", None)["muted"]
+                rect = self.rects["muted"]
                 if rect is not None and rect.collidepoint(event.pos):
                     self.audio.set_muted(not self.audio.muted)
 
@@ -720,6 +841,11 @@ class PlayingScene(Scene):
             self.pacman_direction = direction
 
     def update(self, dt: float) -> None:
+        """Perform update.
+
+        Args:
+            dt: Input for update.
+        """
         if self.intro_playing or self.pacman_dying or self.time_finished:
             return
 
@@ -769,4 +895,9 @@ class PlayingScene(Scene):
             )
 
     def draw(self, screen: pygame.Surface) -> None:
+        """Perform draw.
+
+        Args:
+            screen: Input for draw.
+        """
         draw_game(screen, self)
