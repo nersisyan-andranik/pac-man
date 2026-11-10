@@ -1,0 +1,35 @@
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Python testing and type checking
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Build and distribution
+build/
+dist/
+*.egg-info/
+
+# macOS temporary files
+.DS_Store
+.AppleDouble
+._*
+
+# IDE settings
+.vscode/
+.idea/
+
+# Game-generated data
+highscore.json
+
+# Logs
+*.log

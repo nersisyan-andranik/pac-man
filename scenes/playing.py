@@ -481,6 +481,9 @@ class PlayingScene(Scene):
             self.pacman_move_interval = 0.14
             self.ghost_move_interval = 0.40
 
+        if self.cheat_state["double_speed"]:
+            self.pacman_move_interval /= 2
+
     def load_level(self) -> None:
         """Load level.
         """
@@ -754,7 +757,6 @@ class PlayingScene(Scene):
 
                 rect = self.rects["config_button"]
                 if rect is not None and rect.collidepoint(event.pos):
-                    # Toggle the cheat menu using its current state.
                     self.cheat_state["open_cheat_modal"] = (
                         not self.cheat_state["open_cheat_modal"]
                     )
@@ -780,9 +782,7 @@ class PlayingScene(Scene):
                     self.cheat_state["double_speed"] = (
                         not self.cheat_state["double_speed"]
                     )
-                    self.pacman_move_interval = (
-                        0.1 if self.cheat_state["double_speed"] else 0.2
-                    )
+                    self.update_movement_speed()
 
                 rect = self.rects["extra_life"]
                 if rect is not None and rect.collidepoint(event.pos):
