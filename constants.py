@@ -15,16 +15,13 @@ MAZE_MARGIN = 20
 DEFAULT_LEVEL_SIZE = (21, 15)
 WALL_WIDTH = 2
 
-# ---------- paths ----------
 BASE_DIR = Path(__file__).parent
 HIGHSCORE_PATH = BASE_DIR / "highscore.json"
 
-# ---------- window ----------
 WIDTH = 1300
 HEIGHT = 800
 FPS = 60
 
-# ---------- colors ----------
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 YELLOW = (255, 255, 0)
@@ -33,18 +30,8 @@ RED = (255, 0, 0)
 PINK = (255, 184, 255)
 CYAN = (0, 255, 255)
 ORANGE = (255, 184, 82)
-
-# GHOST_COLORS = [
-#     (255, 0, 0),      # Red - Blinky
-#     (255, 184, 255),  # Pink - Pinky
-#     (0, 255, 255),    # Cyan - Inky
-#     (255, 184, 82),   # Orange - Clyde
-# ]
-
-# ---------- layout ----------
 MARGIN_TOP = 20
 
-# ---------- gameplay ----------
 PLAYER_SPEED = 4
 TOP_SCORES_LIMIT = 10
 

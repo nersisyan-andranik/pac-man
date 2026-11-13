@@ -20,7 +20,7 @@ class Game:
         """
         pygame.init()
         self.current_level = 0
-        self.levels = config["levels"]
+        self.levels = config["level"]
         self.lives = config["lives"]
         self.pacgum = config["pacgum"]
         self.points_per_pacgum = config["points_per_pacgum"]
